@@ -258,4 +258,125 @@ service nfs-kernel-server restart
 
 > Pastikan semua konfigurasi sudah sesuai dengan IP server Anda (`192.168.1.10`) dan storage sudah tersedia sebelum melanjutkan ke konfigurasi CloudStack berikutnya.
 
-## Konfigurasi CloudStack
+### Konfigurasi CloudStack
+-
+
+### Konfigurasi untuk Docker Support dan Layanan Lainnya
+```
+echo "net.bridge.bridge-nf-call-arptables = 0" >> /etc/sysctl.conf
+echo "net.bridge.bridge-nf-call-iptables = 0" >> /etc/sysctl.conf
+sysctl -p
+```
+**Penjelasan:**
+- Mengatur agar paket ARP dan IP yang melalui bridge tidak diproses oleh arptables dan iptables, menghindari konflik dengan container seperti Docker yang memakai bridge networking.
+- ```sysctl -p``` untuk menerapkan konfigurasi tersebut.
+
+## Generate Unique Host ID
+```
+apt-get install uuid -y
+UUID=$(uuid)
+echo host_uuid = \"$UUID\" >> /etc/libvirt/libvirtd.conf
+systemctl restart libvirtd
+```
+> UUID digunakan oleh libvirtd untuk mengidentifikasi host secara unik dalam lingkungan virtualisasi. Konfigurasi ditambahkan ke libvirtd.conf, layanan perlu di-restart.
+
+## Configure Iptables Firewall and Make it Persistent
+```
+NETWORK=192.168.1.0/24
+iptables -A INPUT -s $NETWORK -m state --state NEW -p udp --dport 111 -j ACCEPT
+iptables -A INPUT -s $NETWORK -m state --state NEW -p tcp --dport 111 -j ACCEPT
+iptables -A INPUT -s $NETWORK -m state --state NEW -p tcp --dport 2049 -j ACCEPT
+iptables -A INPUT -s $NETWORK -m state --state NEW -p tcp --dport 32803 -j ACCEPT
+iptables -A INPUT -s $NETWORK -m state --state NEW -p udp --dport 32769 -j ACCEPT
+iptables -A INPUT -s $NETWORK -m state --state NEW -p tcp --dport 892 -j ACCEPT
+iptables -A INPUT -s $NETWORK -m state --state NEW -p tcp --dport 875 -j ACCEPT
+iptables -A INPUT -s $NETWORK -m state --state NEW -p tcp --dport 662 -j ACCEPT
+iptables -A INPUT -s $NETWORK -m state --state NEW -p tcp --dport 8250 -j ACCEPT
+iptables -A INPUT -s $NETWORK -m state --state NEW -p tcp --dport 8080 -j ACCEPT
+iptables -A INPUT -s $NETWORK -m state --state NEW -p tcp --dport 8443 -j ACCEPT
+iptables -A INPUT -s $NETWORK -m state --state NEW -p tcp --dport 9090 -j ACCEPT
+iptables -A INPUT -s $NETWORK -m state --state NEW -p tcp --dport 16514 -j ACCEPT
+#iptables -A INPUT -s $NETWORK -m state --state NEW -p udp --dport 3128 -j ACCEPT
+#iptables -A INPUT -s $NETWORK -m state --state NEW -p tcp --dport 3128 -j ACCEPT
+
+apt-get install iptables-persistent
+```
+> input y/n isi dengan yes dan yes
+**Penjelasan:**
+- Membuka port yang digunakan CloudStack dan layanan terkait (seperti NFS, libvirt, KVM) untuk jaringan lokal 192.168.101.0/24.
+- -m state --state NEW: hanya berlaku untuk koneksi yang baru masuk.
+- apt-get install iptables-persistent: menyimpan aturan iptables agar tetap aktif setelah reboot.
+
+
+## Disable AppArmor on libvirtd
+```
+ln -s /etc/apparmor.d/usr.sbin.libvirtd /etc/apparmor.d/disable/
+ln -s /etc/apparmor.d/usr.lib.libvirt.virt-aa-helper /etc/apparmor.d/disable/
+apparmor_parser -R /etc/apparmor.d/usr.sbin.libvirtd
+apparmor_parser -R /etc/apparmor.d/usr.lib.libvirt.virt-aa-helper
+```
+**Penjelasan:**
+- AppArmor adalah sistem keamanan berbasis profil. Untuk mempermudah pengelolaan libvirtd, profilnya dinonaktifkan.
+- Menggunakan symbolic link ke folder disable dan menghapus profil dari kernel dengan apparmor_parser -R.
+
+## Launch Management Server
+```
+cloudstack-setup-management
+systemctl status cloudstack-management
+tail -f /var/log/cloudstack/management/management-server.log
+```
+> cloudstack-setup-management digunakan untuk menginisialisasi server manajemen CloudStack (konfigurasi DB, IP, dan service). Command di bawahnya akan mengecek status layanan CLoudStack dan memantau log secara langsung untuk troubleshooting.
+>
+
+## Open Web Browser to Access Dashboard
+```
+http://<IP-DINAMIS>:8080
+```
+> IP dinamis adalah IP Address dari host.
+
+
+## Multi-host Cloud Infrastructure: Importing CloudStack Repositories Key
+```
+mkdir -p /etc/apt/keyrings
+wget -O- http://packages.shapeblue.com/release.asc | gpg --dearmor | sudo tee /etc/apt/keyrings/cloudstack.gpg
+echo deb [signed-by=...] ... > /etc/apt/sources.list.d/cloudstack.list
+```
+**Penjelasan**
+Untuk menambahkan repositori resmi CloudStack dari ShapeBlue ke sistem. Kunci GPG diimpor untuk memverifikasi paket dari repositori tersebut.
+
+### Installing KVM Host and CloudStack-Agent
+```
+apt-get install qemu-kvm cloudstack-agent
+```
+> Menginstal hypervisor KVM (qemu-kvm) dan agen CloudStack yang diperlukan agar host bisa dikontrol oleh manajemen server.
+
+### Configure Qemu KVM Virtualisation Management (libvirtd)
+```
+# Mengatur VNC agar bisa menerima koneksi dari semua IP (remote akses ke VM via VNC)
+sed -i -e 's/\#vnc_listen.*$/vnc_listen = "0.0.0.0"/g' /etc/libvirt/qemu.conf
+
+# Mengaktifkan mode listening di libvirtd agar menerima koneksi TCP dari remote (CloudStack management server)
+sed -i.bak 's/^\(LIBVIRTD_ARGS=\).*/\1"--listen"/' /etc/default/libvirtd
+
+# Menonaktifkan TLS karena tidak digunakan
+echo 'listen_tls=0' >> /etc/libvirt/libvirtd.conf
+
+# Mengaktifkan koneksi TCP biasa
+echo 'listen_tcp=1' >> /etc/libvirt/libvirtd.conf
+
+# Menentukan port TCP yang digunakan untuk koneksi (default libvirt TCP port)
+echo 'tcp_port = "16509"' >> /etc/libvirt/libvirtd.conf
+
+# Mematikan fitur Multicast DNS (mDNS) karena tidak diperlukan dalam konfigurasi ini
+echo 'mdns_adv = 0' >> /etc/libvirt/libvirtd.conf
+
+# Menonaktifkan autentikasi pada koneksi TCP (gunakan ini hanya jika jaringan internal aman)
+echo 'auth_tcp = "none"' >> /etc/libvirt/libvirtd.conf
+
+# Menonaktifkan semua socket libvirtd default yang tidak diperlukan untuk menghindari konflik
+systemctl mask libvirtd.socket libvirtd-ro.socket libvirtd-admin.socket libvirtd-tls.socket libvirtd-tcp.socket
+
+# Me-restart layanan libvirtd agar semua perubahan konfigurasi diterapkan
+systemctl restart libvirtd
+```
+

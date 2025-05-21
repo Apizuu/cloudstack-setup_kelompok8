@@ -4,7 +4,6 @@ Kelompok 8:
 - Monica Vierin Pasman (2206029405)
 - Muhammad Fahish Haritsah (2206059616)
 - Valentino Farish Adrian (2206825896)
-- Stefanus Simon Rilando (2206830422)
 
 ## Dasar Teori
 ### CloudStack
@@ -33,23 +32,20 @@ OS: Ubuntu Live Server 22.04
 
 ### IP Address
 ```
-Alamat IP jaringan: 192.168.1.0/24
-Alamat IP host: 192.168.1.10/24
-Alamat IP gateway: 192.168.1.1
-Alamat IP TailScale: 100.66.37.47/32
-Alamat IP manajemen:
-Alamat IP sistem:
-Alamat IP publik:
+Network Adress: 192.168.1.0/24
+Gateway Address: 192.168.1.1
+Host IP Address: 192.168.1.10/24
+Host Tailscale IP Address: 100.66.37.47/32
 ```
 
 ## Konfigurasi Jaringan
-
-### Mendefinisikan konfigurasi jaringan dengan Netplan pada /etc/netplan
+### Definisikan Konfigurasi Jaringan dengan Netplan pada /etc/netplan
 ```
 cd /etc/netplan
 sudo nano
 ```
-### Edit file dengan menetapkan Bridge 
+
+### Edit File dengan Menetapkan Bridge 
 ```
 # Updated in 28/4/2025
 network:
@@ -74,69 +70,60 @@ network:
         stp: false
         forward-delay: 0
 ```
-### Terapkan Konfigurasi Jaringan
 
+### Terapkan Konfigurasi Jaringan
 ```
 sudo -i  #buka shell baru dengan hak akses root
 netplan generate #menghasilkan file konfigurasi untuk renderer
 netplan apply  #menerapkan konfigurasi jaringan ke sistem
 reboot #restart sistem
 ```
-> Untuk memeriksa apakah konfigurasi jaringan sudah diterapkan, gunakan perintah ifconfig dan cari interface "br0", pastikan alamat IP-nya sesuai dengan yang sudah diatur.
+> Untuk memeriksa apakah konfigurasi jaringan sudah diterapkan, gunakan perintah `ifconfig` dan cari interface `br0`. Pastikan alamat IP-nya sesuai dengan yang sudah diatur.
 
-### Uji Jaringan, pastikan konfigurasi sudah diterapkan
-
+### Uji Jaringan dengan Memastikan bahwa Konfigurasi Sudah Diterapkan
 ```
 ifconfig     #cek alamat IP dan interface yang ada
 ping -c 20 google.com  #pastikan dapat terhubung ke internet
 ```
-
 > Jika tidak bisa ping ke google.com, coba ping ke gateway dan 8.8.8.8.
 > Langkah ini akan membantu mengetahui masalah koneksi antara komputer dan internet, pastikan tidak ada masalah karena akan mengunduh paket dari internet.
 
-### Masuk ke sistem sebagai root
-
+### Masuk ke Sistem sebagai Root
 ```
 su -
 ```
 
-### Instalasi alat monitoring sumber daya hardware
-
+### Install Alat Monitoring Sumber Daya Hardware
 ```
 apt update -y
 apt upgrade -y
 apt install htop lynx duf -y
 apt install bridge-utils
 ```
-
 * htop adalah alat monitoring penggunaan CPU
 * duf adalah alat monitoring penggunaan disk
 * lynx adalah browser web berbasis CLI
 
-### Konfigurasi LVM (opsional)
-
+### Konfigurasi LVM (Opsional)
 ```
-#tidak wajib kecuali menggunakan logical volume
+# Tidak wajib kecuali menggunakan logical volume
 lvextend -l +100%FREE /dev/ubuntu-vg/ubuntu-lv
 resize2fs /dev/ubuntu-vg/ubuntu-lv
 ```
 
-### Instalasi layanan jaringan
-
+### Install Layanan Jaringan
 ```
 apt-get install openntpd openssh-server sudo tar -y
 apt-get install intel-microcode -y
 passwd root
 #ganti password root, misal: Pa$$w0rd
 ```
-
 * openntpd adalah klien NTP untuk sinkronisasi waktu antara host dan internet
 * openssh-server adalah server SSH untuk akses remote
 * tar adalah alat kompresi dan dekompresi file, sering digunakan untuk file yang diunduh
 * intel-microcode adalah kumpulan prosedur untuk meningkatkan modularitas tingkat rendah pada prosesor Intel
 
-### Aktifkan login root via SSH
-
+### Aktifkan Login Root via SSH
 ```
 sed -i '/#PermitRootLogin prohibit-password/a PermitRootLogin yes' /etc/ssh/sshd_config
 #restart layanan ssh
@@ -149,35 +136,29 @@ systemctl restart sshd.service
 ```
 nano /etc/ssh/sshd_config
 ```
-Cari baris 'PermitRootLogin' dan pastikan nilainya 'yes'
+Cari baris `PermitRootLogin` dan pastikan nilainya `yes`
 
 ## Instalasi Tailscale
-
 ```
-curl -fsSL https://tailscale.com/install.sh | sh   #unduh dan instalasi Tailscale
-tailscale up                                       #aktifkan Tailscale dan login dengan akun 
+curl -fsSL https://tailscale.com/install.sh | sh   # Unduh dan instalasi Tailscale
+tailscale up                                       # Aktifkan Tailscale dan login dengan akun 
 ```
-
 Setelah menjalankan perintah di atas, ikuti instruksi pada terminal untuk login ke akun Tailscale melalui browser. Setelah berhasil login, server akan terhubung ke jaringan privat Tailscale dan dapat diakses dari perangkat lain yang juga terhubung ke jaringan yang sama.
 
 ## Instalasi CloudStack
-
 ### Import Key Repository dari CloudStack
-
 ```
 sudo -i
 mkdir -p /etc/apt/keyrings 
 wget -O- http://packages.shapeblue.com/release.asc | gpg --dearmor | sudo tee /etc/apt/keyrings/cloudstack.gpg > /dev/null
 echo deb [signed-by=/etc/apt/keyrings/cloudstack.gpg] http://packages.shapeblue.com/cloudstack/upstream/debian/4.18 / > /etc/apt/sources.list.d/cloudstack.list
 ```
-
 * Baris pertama membuat direktori untuk menyimpan kunci publik cloudstack.
 * Perintah wget -O digunakan untuk mengunduh URL dan mengarahkan output ke perintah `gpg --dearmor`.
 * Perintah `gpg --dearmor` mengubah format ASCII menjadi format biner.
 * Perintah `sudo tee` mengarahkan hasil ke file `/etc/apt/keyrings/cloudstack.gpg`.
 
 ### Periksa Repositori yang Ditambahkan
-
 ```
 nano /etc/apt/sources.list.d/cloudstack.list
 ```
@@ -186,23 +167,19 @@ Pastikan terdapat baris berikut pada bagian akhir file:
 deb [signed-by=/etc/apt/keyrings/cloudstack.gpg] http://packages.shapeblue.com/cloudstack/upstream/debian/4.18 /
 ```
 
-### Instalasi CloudStack dan MySQL Server
-
+### Install CloudStack dan MySQL Server
 ```
 apt-get update -y
 apt-get install cloudstack-management mysql-server
 ```
 
 ### Konfigurasi MySQL
-
 #### Buka file konfigurasi MySQL
-
 ```
 nano /etc/mysql/mysql.conf.d/mysqld.cnf
 ```
 
 #### Tambahkan baris berikut di bawah bagian [mysqld]
-
 ```
 server-id = 1
 sql-mode="STRICT_TRANS_TABLES,NO_ENGINE_SUBSTITUTION,ERROR_FOR_DIVISION_BY_ZERO,NO_ZERO_DATE,NO_ZERO_IN_DATE,NO_ENGINE_SUBSTITUTION"
@@ -214,26 +191,22 @@ binlog-format = 'ROW'
 ```
 
 #### Restart layanan MySQL
-
 ```
 systemctl restart mysql
 ```
 
 #### Cek status layanan MySQL
-
 ```
 systemctl status mysql
 ```
 Pastikan statusnya 'active'.
 
-### Deploy Database sebagai Root dan Buat User "cloud" dengan Password "cloud"
-
+### Deploy Database sebagai Root dan Buat User `cloud` dengan Password `cloud`
 ```
 cloudstack-setup-databases cloud:cloud@localhost --deploy-as=root:Pa$$w0rd -i 192.168.1.10
 ```
 
 ### Konfigurasi Primary dan Secondary Storage
-
 ```
 apt-get install nfs-kernel-server quota
 echo "/export  *(rw,async,no_root_squash,no_subtree_check)" > /etc/exports
@@ -242,7 +215,6 @@ exportfs -a
 ```
 
 ### Konfigurasi NFS Server
-
 ```
 sed -i -e 's/^RPCMOUNTDOPTS="--manage-gids"$/RPCMOUNTDOPTS="-p 892 --manage-gids"/g' /etc/default/nfs-kernel-server
 sed -i -e 's/^STATDOPTS=$/STATDOPTS="--port 662 --outgoing-port 2020"/g' /etc/default/nfs-common
@@ -250,18 +222,43 @@ echo "NEED_STATD=yes" >> /etc/default/nfs-common
 sed -i -e 's/^RPCRQUOTADOPTS=$/RPCRQUOTADOPTS="-p 875"/g' /etc/default/quota
 service nfs-kernel-server restart
 ```
-
 **Penjelasan:**
 - Perintah `sed` digunakan untuk mengubah konfigurasi port dan opsi pada file konfigurasi NFS.
 - `echo "NEED_STATD=yes"` menambahkan baris agar layanan statd aktif.
 - `service nfs-kernel-server restart` untuk me-restart layanan NFS.
-
 > Pastikan semua konfigurasi sudah sesuai dengan IP server (`192.168.1.10`) dan storage sudah tersedia sebelum melanjutkan ke konfigurasi CloudStack berikutnya.
 
-### Konfigurasi CloudStack
--
+### Konfigurasi Hypervisor KVM
+#### Install KVM dan agen CloudStack
+```
+apt-get install qemu-kvm cloudstack-agent -y
+```
 
-### Konfigurasi untuk Docker Support dan Layanan Lainnya
+#### Konfigurasi manajemen virtualisasi KVM dengan libvirt
+```
+sed -i -e 's/\#vnc_listen.*$/vnc_listen = "0.0.0.0"/g' /etc/libvirt/qemu.conf
+
+# Pada versi Ubuntu 22.04, sebaiknya tambahkan LIBVIRTD_ARGS="--listen" ke /etc/default/libvirtd 
+sed -i.bak 's/^\(LIBVIRTD_ARGS=\).*/\1"--listen"/' /etc/default/libvirtd
+```
+> Command di atas berfungsi untuk mengaktifkan akses VNC melalui alamat IP mana pun agar GUI VM yang dijalankan QEMU dapat diakses dari luar via VNC client dari jaringan lain. Command selanjutnya digunakan agar libvirt mendengar koneksi TCP yang dibangun oleh klien remote. 
+
+```
+echo 'listen_tls=0' >> /etc/libvirt/libvirtd.conf
+echo 'listen_tcp=1' >> /etc/libvirt/libvirtd.conf
+echo 'tcp_port = "16509"' >> /etc/libvirt/libvirtd.conf
+echo 'mdns_adv = 0' >> /etc/libvirt/libvirtd.conf
+echo 'auth_tcp = "none"' >> /etc/libvirt/libvirtd.conf
+```
+> Command di atas bertujuan untuk menambahkan konfigurasi tertentu ke file `libvirtd.conf`. Setiap baris memiliki fungsi untuk: (1) menonaktifkan TLS (SSL); (2) mengaktifkan koneksi TCP agar libvirt dapat menerima koneksi remote; (3) mengatur port TCP ke port default libvirt dalam koneksi TCP; (4) menonaktifkan pengumuman otomatis via mDNS; serta (5) tidak menggunakan autentikasi TCP apapun. 
+
+```
+systemctl mask libvirtd.socket libvirtd-ro.socket libvirtd-admin.socket libvirtd-tls.socket libvirtd-tcp.socket
+systemctl restart libvirtd
+```
+> Command di atas digunakan untuk memastikan bahwa soket libvirt tidak digunakan dan memulai ulang libvirtd agar semua perubahan konfigurasi dapat diterapkan. 
+
+### Konfigurasi Docker Support dan Layanan Lainnya
 ```
 echo "net.bridge.bridge-nf-call-arptables = 0" >> /etc/sysctl.conf
 echo "net.bridge.bridge-nf-call-iptables = 0" >> /etc/sysctl.conf
@@ -271,7 +268,7 @@ sysctl -p
 - Mengatur agar paket ARP dan IP yang melalui bridge tidak diproses oleh arptables dan iptables, menghindari konflik dengan container seperti Docker yang memakai bridge networking.
 - ```sysctl -p``` untuk menerapkan konfigurasi tersebut.
 
-## Generate Unique Host ID
+### Hasilkan ID Host yang Unik
 ```
 apt-get install uuid -y
 UUID=$(uuid)
@@ -280,7 +277,7 @@ systemctl restart libvirtd
 ```
 > UUID digunakan oleh libvirtd untuk mengidentifikasi host secara unik dalam lingkungan virtualisasi. Konfigurasi ditambahkan ke libvirtd.conf, layanan perlu di-restart.
 
-## Configure Iptables Firewall and Make it Persistent
+### Konfigurasi Firewall Iptables Secara Permanen
 ```
 NETWORK=192.168.1.0/24
 iptables -A INPUT -s $NETWORK -m state --state NEW -p udp --dport 111 -j ACCEPT
@@ -307,8 +304,7 @@ apt-get install iptables-persistent
 - -m state --state NEW: hanya berlaku untuk koneksi yang baru masuk.
 - apt-get install iptables-persistent: menyimpan aturan iptables agar tetap aktif setelah reboot.
 
-
-## Disable AppArmor on libvirtd
+### Matikan AppArmor pada libvirtd
 ```
 ln -s /etc/apparmor.d/usr.sbin.libvirtd /etc/apparmor.d/disable/
 ln -s /etc/apparmor.d/usr.lib.libvirt.virt-aa-helper /etc/apparmor.d/disable/
@@ -319,159 +315,157 @@ apparmor_parser -R /etc/apparmor.d/usr.lib.libvirt.virt-aa-helper
 - AppArmor adalah sistem keamanan berbasis profil. Untuk mempermudah pengelolaan libvirtd, profilnya dinonaktifkan.
 - Menggunakan symbolic link ke folder disable dan menghapus profil dari kernel dengan apparmor_parser -R.
 
-## Launch Management Server
+### Luncurkan Management Server
 ```
 cloudstack-setup-management
 systemctl status cloudstack-management
 tail -f /var/log/cloudstack/management/management-server.log
 ```
 > cloudstack-setup-management digunakan untuk menginisialisasi server manajemen CloudStack (konfigurasi DB, IP, dan service). Command di bawahnya akan mengecek status layanan CLoudStack dan memantau log secara langsung untuk troubleshooting.
->
 
-## Open Web Browser to Access Dashboard
+### Buka Web Browser untuk Mengakses Dashboard
 ```
-http://<IP-DINAMIS>:8080
+http://<IP-ADDRESS>:8080
 ```
-> IP dinamis adalah IP Address dari host.
+> Ganti nilai `IP-ADDRESS` dengan alamat IP lokal milik host atau alamat IP Tailscale milik host untuk akses dashboard admin CloudStack dari jarak jauh. 
 
+## Setup GUI CloudStack
+### Buat Zona Baru
+- Klik icon menu pada bagian kiri atas.
+- Pilih Infrastructure > Zones > Add zone.
+- Pada tab `Zone type`, pilih `core`.
+- Pada tab `Core zone type`, pilih `basic` untuk membentuk zona **shared network**.
+  > Instance VM yang dibuat dalam zona jenis ini akan berada dalam jaringan yang sama dengan host CloudStack (hypervisor KVM). Instance akan bergantung dengan host melalui bridged `cloudbr0`.
+- Isi `Zone details` sesuai dengan konfigurasi awal ketika meng-install CloudStack.
+![Image](https://github.com/user-attachments/assets/31bc3b57-d374-4726-993f-c55524688ea6)
+- Pada tab `Network`, langsung klik *next* pada bagian `Physical network`.
+- Pada bagian `Pod` isi gateway dan netmask dengan alamat IP router. Gunakan alamat IP yang tersedia untuk mengisi sistem IP yang direservasi. 
+![Image](https://github.com/user-attachments/assets/4b4081bf-1f76-4c3c-bb5f-7e40b306b7b1)
+- Pada bagian `Guest traffic`, isi gateway dan netmask guest dengan alamat IP router. Gunakan alamat IP yang tersedia untuk mengisi IP guest. Jangan gunakan alamat IP sistem. 
+![Image](https://github.com/user-attachments/assets/35b936a2-bb48-4a0e-89d0-c59807dcdfdd)
+- Pada tab `Add resource`, isi nama kluster pada bagian `Cluster`.
+- Pada bagian `IP address`, isi host name dengan alamat IP host.
+![Image](https://github.com/user-attachments/assets/acbc8e1e-121a-4237-9995-35a59e532259)
+- Pada bagian `Primary storage`, isi protokol dengan `nfs`. Alamat IP server yang dimaksud adalah server NFS (berada di dalam host). Isi path sesuai dengan direktori yang sudah dibuat ketika mengkonfigurasi server NFS. 
+![Image](https://github.com/user-attachments/assets/2311eae9-2f03-4980-8dce-a7ce376cff4b)
+- Pada bagian `Secondary storage`, isi input tidak beda jauh dengan pengisian primary storage. 
+![Image](https://github.com/user-attachments/assets/82b91723-10f5-4a7e-a9c9-cce033d61bf4)
+- Setelah semua input telah diisi, zona siap diluncurkan dengan meng-klik tombol `Launch zone`.
 
-## Multi-host Cloud Infrastructure: Importing CloudStack Repositories Key
+**Additional Note**
+
+Jika ingin membuat zona baru lainnya, buat direktori baru pada server NFS untuk dijadikan primary dan secondary storage menggunakan command berikut.
 ```
-mkdir -p /etc/apt/keyrings
-wget -O- http://packages.shapeblue.com/release.asc | gpg --dearmor | sudo tee /etc/apt/keyrings/cloudstack.gpg
-echo deb [signed-by=...] ... > /etc/apt/sources.list.d/cloudstack.list
-```
-**Penjelasan**
-Untuk menambahkan repositori resmi CloudStack dari ShapeBlue ke sistem. Kunci GPG diimpor untuk memverifikasi paket dari repositori tersebut.
-
-### Installing KVM Host and CloudStack-Agent
-```
-apt-get install qemu-kvm cloudstack-agent
-```
-> Menginstal hypervisor KVM (qemu-kvm) dan agen CloudStack yang diperlukan agar host bisa dikontrol oleh manajemen server.
-
-### Configure Qemu KVM Virtualisation Management (libvirtd)
-```
-# Mengatur VNC agar bisa menerima koneksi dari semua IP (remote akses ke VM via VNC)
-sed -i -e 's/\#vnc_listen.*$/vnc_listen = "0.0.0.0"/g' /etc/libvirt/qemu.conf
-
-# Mengaktifkan mode listening di libvirtd agar menerima koneksi TCP dari remote (CloudStack management server)
-sed -i.bak 's/^\(LIBVIRTD_ARGS=\).*/\1"--listen"/' /etc/default/libvirtd
-
-# Menonaktifkan TLS karena tidak digunakan
-echo 'listen_tls=0' >> /etc/libvirt/libvirtd.conf
-
-# Mengaktifkan koneksi TCP biasa
-echo 'listen_tcp=1' >> /etc/libvirt/libvirtd.conf
-
-# Menentukan port TCP yang digunakan untuk koneksi (default libvirt TCP port)
-echo 'tcp_port = "16509"' >> /etc/libvirt/libvirtd.conf
-
-# Mematikan fitur Multicast DNS (mDNS) karena tidak diperlukan dalam konfigurasi ini
-echo 'mdns_adv = 0' >> /etc/libvirt/libvirtd.conf
-
-# Menonaktifkan autentikasi pada koneksi TCP (gunakan ini hanya jika jaringan internal aman)
-echo 'auth_tcp = "none"' >> /etc/libvirt/libvirtd.conf
-
-# Menonaktifkan semua socket libvirtd default yang tidak diperlukan untuk menghindari konflik
-systemctl mask libvirtd.socket libvirtd-ro.socket libvirtd-admin.socket libvirtd-tls.socket libvirtd-tcp.socket
-
-# Me-restart layanan libvirtd agar semua perubahan konfigurasi diterapkan
-systemctl restart libvirtd
+mkdir -p /export/primary_new /export/secondary_new
+exportfs -a
+service nfs-kernel-server restart
 ```
 
-## Setup on GUI : Creating Pod, Zone, Cluster, Host, ISO, and Instance. (VIERIN)
+### Download ISO
+- Klik icon menu pada bagian kiri atas.
+- Pilih Images > ISOs > Register ISO.
+- Masukkan URL untuk mengunduh ISO image yang diinginkan. Pada percobaan ini, dipilih Ubuntu 22.04 untuk mempermudah konfigurasi. Pilih zona yang sudah dibuat sebelumnya. 
+![Image](https://github.com/user-attachments/assets/6e588198-b2b3-447a-9df7-7220b1d09519)
+- Proses pengunduhan ISO yang berhasil berjalan ditandai dengan state `Ready`.
+- Persentase progress unduhan dapat dilihat pada tab `Zones`.
+![Image](https://github.com/user-attachments/assets/8f3d5262-d215-464a-bc1c-96274b896a08)
+-  ISO yang berhasil diunduh dapat digunakan untuk membuat instance VM. 
 
-## Network Architecture Setup: Setup VM, Expose subnet route on Tailscale, Creating SNAT rules, and Final Topology. (HAFIZ)
+### Tambahkan Compute Offering (Opsional)
+Secara default, CloudStack sudah memberikan pilihan komputasi untuk `Small Instance` dan `Medium Instance`. Akan tetapi, spesifikasi komputasi instance VM dapat disesuaikan dengan kebutuhan dan preferensi pengguna melalui cara berikut ini. 
+- Klik icon menu pada bagian kiri atas.
+- Pilih Service offerings > Compute offerings > Add compute offering.
+- Sesuaikan banyaknya core, serta besarnya CPU dan memori.
+![Image](https://github.com/user-attachments/assets/ab40b4e1-d26a-42d4-a5c2-0c3775143404)
+- Pilihan komputasi bertambah dan pengguna dapat memilih salah satu compute offering ketika membuat instance VM.
+![Image](https://github.com/user-attachments/assets/4d73e6f3-c0d9-44b1-8287-6b53080bb634)
+
+### Buat Instance
+- Klik icon menu pada bagian kiri atas.
+- Pilih Compute > Instances > Add instance.
+- Pada `Select deployment infrastructure`, pilih zona yang telah dibuat sebelumnya. Misalnya `CLOUD8-NEW-ZONE`.
+![Image](https://github.com/user-attachments/assets/1231e7af-f7ee-4fcf-88b4-9bd191d363b5)
+- Pada `Template/ISO`, pilih ISOs > My ISOs > Ubuntu 22.04 Live-Server. Gunakan hypervisor KVM.
+![Image](https://github.com/user-attachments/assets/367c8cf4-fc46-499d-b238-0611411a3973)
+- Pada `Compute offering`, pilih compute offering yang telah dibuat sebelumnya. Misalnya `Big Instance`.
+![Image](https://github.com/user-attachments/assets/ef960c27-afda-430c-a041-0a86f6d1f5d5)
+- Pada `Disk size`, pilih yang paling sesuai dengan kebutuhan pengguna saat ini.
+![Image](https://github.com/user-attachments/assets/36374a9d-2ead-47fe-975b-25384c471393)
+- Sisanya biarkan dalam pilihan default, lalu klik `Launch instance`.
+- Instance VM yang telah berhasil dibuat akan menunjukkan state `Running`. Console VM hanya dapat diakses oleh perangkat yang satu jaringan dengan host dan VM. Jika ingin diakses dari luar dapat mengikuti tutorial di bawah ini. 
 
 ## Setup VM
-```bash
-vm1@vm1:~$ ip a
+### Cek Interface dan Alamat IP
+Cek interface dan alamat IP yang terdaftar di VM menggunakan command `ip a`.
+```
 1: lo: <LOOPBACK,UP,LOWER_UP> ...
     inet 127.0.0.1/8 scope host lo
 2: ens3: <BROADCAST,MULTICAST,UP,LOWER_UP> ...
     inet 192.168.1.114/24 metric 100 brd 192.168.1.255 scope global ens3
 ```
 
-## Expose subnet route
-
-Jalankan perintah berikut pada laptop host di jaringan `192.168.1.0/24` dan yang telah login Tailscale:
-
-```bash
+### Expose Subnet Route
+#### Iklankan rute jaringan
+Jalankan perintah berikut di laptop host pada jaringan `192.168.1.0/24` dan di perangkat yang telah login Tailscale.
+```
 sudo tailscale up --advertise-routes=192.168.1.0/24
 ````
 
-### Approve route dari admin console
+#### Setujui rute dari konsol admin
+Masuk ke [Tailscale Admin Console](https://login.tailscale.com/admin).
+- Buka tab **Machines**.
+- Cari perangkat host untuk advertise route.
+- Klik **Review route** lalu **Enable** untuk subnet `192.168.1.0/24`.
 
-Masuk ke [Tailscale Admin Console](https://login.tailscale.com/admin) lalu:
-
-* Buka tab **Machines**
-* Cari perangkat host untuk advertise route
-* Klik **Review route** lalu **Enable** untuk subnet `192.168.1.0/24`
-
-
-
-### Cek konektivitas
-
+#### Cek Konektivitas
 Setelah route disetujui, perangkat lain di jaringan Tailscale akan dapat mengakses alamat IP host dalam subnet `192.168.1.0/24`.
 
 Contoh:
-
-```bash
+```
 ping 192.168.1.114
 ```
 
-* aktifkan IP forwarding untuk akses dua arah:
+Aktifkan IP forwarding untuk akses dua arah.
+```
+sudo sysctl -w net.ipv4.ip_forward=1
+```
 
-
-  ```bash
-  sudo sysctl -w net.ipv4.ip_forward=1
-  ```
-
-## Creating SNAT rules
-
-### Situasi
-
+### Buat SNAT Rules
+#### Situasi saat ini 
 - Laptop Host:
   - IP Lokal: `192.168.1.10`
   - IP Tailscale: `100.66.37.47`
 - VM berjalan di dalam laptop host:
   - IP VM: `192.168.1.114`
-- Perangkat lain di jaringan Tailscale:
+- Perangkat luar di jaringan Tailscale:
   - IP Tailscale: `100.124.10.100` (laptop lain)
-
-Perangkat dengan IP Tailscale `100.124.10.100` ingin melakukan ping ke `192.168.1.114` (VM).
-
----
-
-## Problem
-
-- Ping dari `100.124.10.100` berhasil **masuk ke VM**, namun gagal mendapatkan **reply**.
-- Setelah ditelusuri, reply dari VM tidak kembali ke `100.124.10.100`, tapi malah dilempar ke **default gateway rumah** (`192.168.1.1`).
-- Ini terjadi karena VM tidak mengenali IP Tailscale `100.124.10.100` sebagai bagian dari jaringan yang valid.
+> Perangkat dengan IP Tailscale `100.124.10.100` ingin melakukan ping ke `192.168.1.114` (VM).
 
 ---
 
-## Penyebab
+#### Masalah
+- Ping dari `100.124.10.100` berhasil **masuk ke VM**, tetapi perangkat luar gagal mendapatkan **reply**.
+- Setelah ditelusuri, reply dari VM tidak kembali ke `100.124.10.100`, tetapi malah dilempar ke **default gateway router** yang terhubung dengan host (`192.168.1.1`).
+- Hal ini terjadi karena VM tidak mengenali IP Tailscale `100.124.10.100` sebagai bagian dari jaringan yang valid.
 
+---
+
+#### Penyebab
 - Saat ping masuk, source IP-nya adalah `100.124.10.100`.
-- VM tidak tahu harus balas ke mana, karena tidak ada routing ke IP tersebut.
+- VM tidak tahu harus mengirim balasan ke mana, karena tidak ada routing ke IP tersebut.
 - Akibatnya, VM mengirim balasan ke default gateway (`192.168.1.1`) dan bukannya kembali melalui laptop host.
 
 ---
 
-## Solusi
+#### Solusi
+Agar VM bisa mengenali sumber ping dan membalas melalui jalur yang benar, source IP perlu diubah saat paket diteruskan dari Tailscale ke VM. Caranya dengan menggunakan iptables SNAT (dalam bentuk MASQUERADE).
 
-Agar VM bisa mengenali sumber ping dan membalas melalui jalur yang benar, kita perlu mengubah source IP saat paket diteruskan dari Tailscale ke VM. Caranya adalah dengan menggunakan iptables SNAT (dalam bentuk MASQUERADE).
-
-Tambahkan rule berikut di laptop host (bukan di VM):
-
-```bash
+Tambahkan rule berikut di laptop host (bukan di VM).
+```
 sudo iptables -t nat -A POSTROUTING -o cloudbr0 -j MASQUERADE
 ````
 
 Penjelasan:
-
 * `-t nat`: mengatur tabel NAT
 * `-A POSTROUTING`: menambahkan rule di tahap setelah routing diproses
 * `-o cloudbr0`: interface virtual bridge (jaringan antara host dan VM)
@@ -479,10 +473,8 @@ Penjelasan:
 
 ---
 
-## Hasil
-
+#### Hasil
 Setelah rule diterapkan:
-
 * Saat laptop lain (100.124.10.100) ping ke `192.168.1.114`, paket diteruskan dari Tailscale ke VM melalui laptop host.
 * Source IP diubah dari `100.124.10.100` menjadi `192.168.1.10`.
 * VM mengenali dan merespon ke IP `192.168.1.10`.
@@ -490,82 +482,50 @@ Setelah rule diterapkan:
 
 ---
 
-### Final Topology
+## Topologi Final
 ![Gambar Topologi Akhir](final_topologi.png)
 
-## Service Setup: SSH and Http via apache (HAFIZ)
-
-
-### Instalasi OpenSSH Server
-
-```bash
+## Setup Layanan (SSH and HTTP via Apache) 
+### Setup SSH 
+#### Install server OpenSSH 
+```
 sudo apt install openssh-server -y
 ```
 
-### Cek Status SSH
-
-```bash
-sudo systemctl status ssh
+#### Cek status dan jalankan SSH
 ```
-
-### Jalankan SSH
-
-```bash
+sudo systemctl status ssh
 sudo systemctl enable ssh
 sudo systemctl start ssh
 ```
 
-### Cek IP Address untuk Akses
-
-```bash
+#### Cek alamat IP untuk akses
+```
 ip a
 ```
 
-Gunakan IP tersebut untuk mengakses SSH dari perangkat lain:
-
-```bash
+Gunakan IP tersebut untuk akses SSH dari perangkat luar. 
+```
 ssh vm1@192.168.1.114
 ```
 
 ---
 
-## Setup HTTP Service (Apache)
-
-### Instalasi Apache2
-
-```bash
+### Setup HTTP Service (Apache)
+#### Install Apache2
+```
 sudo apt install apache2 -y
 ```
 
-### Cek Status Apache
-
-```bash
-sudo systemctl status apache2
+#### Cek status dan jalankan Apache
 ```
-
-### Jalankan Apache (jika belum aktif)
-
-```bash
+sudo systemctl status apache2
 sudo systemctl enable apache2
 sudo systemctl start apache2
 ```
 
-### Tes di Browser
-
-Buka browser dan akses:
-
-```
-http://localhost
-```
-
-atau dari perangkat lain:
-
-```
-http://192.168.1.114
-```
+#### Tes layanan di browser
+Buka browser dan akses `http://localhost`. Jika dibuka dari perangkat lain, dapat mengakses layanan HTTP melalui `http://192.168.1.114`.
 ![Akses http](akses_HTTP.png)
 
-
 ---
-
-

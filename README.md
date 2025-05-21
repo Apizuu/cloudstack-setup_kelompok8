@@ -379,4 +379,6 @@ systemctl mask libvirtd.socket libvirtd-ro.socket libvirtd-admin.socket libvirtd
 # Me-restart layanan libvirtd agar semua perubahan konfigurasi diterapkan
 systemctl restart libvirtd
 ```
+# Setup on GUI : Creating Pod, Zone, Cluster, Host, ISO, and Instance. (VIERIN)
 
+## Network Architecture Setup: Setup VM, Expose subnet route on Tailscale, Creating Firewall rules, and Final Topology. (HAFIZ)

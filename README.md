@@ -491,7 +491,7 @@ Setelah rule diterapkan:
 ---
 
 ### Final Topology
-![image](https://hackmd.io/_uploads/BkNaPVoWge.png)
+![Gambar Topologi Akhir](final_topologi.png)
 
 ## Service Setup: SSH and Http via apache (HAFIZ)
 
@@ -563,7 +563,7 @@ atau dari perangkat lain:
 ```
 http://192.168.1.114
 ```
-![image](https://hackmd.io/_uploads/Bk-PiVoWlg.png)
+![Akses http](akses_HTTP.png)
 
 
 ---

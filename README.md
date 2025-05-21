@@ -82,17 +82,17 @@ netplan generate #menghasilkan file konfigurasi untuk renderer
 netplan apply  #menerapkan konfigurasi jaringan ke sistem
 reboot #restart sistem
 ```
-> Untuk memeriksa apakah konfigurasi jaringan sudah diterapkan, gunakan perintah ifconfig dan cari interface "br0", pastikan alamat IP-nya sesuai dengan yang sudah Anda atur.
+> Untuk memeriksa apakah konfigurasi jaringan sudah diterapkan, gunakan perintah ifconfig dan cari interface "br0", pastikan alamat IP-nya sesuai dengan yang sudah diatur.
 
 ### Uji Jaringan, pastikan konfigurasi sudah diterapkan
 
 ```
 ifconfig     #cek alamat IP dan interface yang ada
-ping -c 20 google.com  #pastikan Anda dapat terhubung ke internet
+ping -c 20 google.com  #pastikan dapat terhubung ke internet
 ```
 
-> Jika Anda tidak bisa ping ke google.com, coba ping ke gateway dan 8.8.8.8.
-> Langkah ini akan membantu Anda mengetahui masalah koneksi antara komputer dan internet, pastikan tidak ada masalah karena Anda akan mengunduh paket dari internet.
+> Jika tidak bisa ping ke google.com, coba ping ke gateway dan 8.8.8.8.
+> Langkah ini akan membantu mengetahui masalah koneksi antara komputer dan internet, pastikan tidak ada masalah karena akan mengunduh paket dari internet.
 
 ### Masuk ke sistem sebagai root
 
@@ -155,10 +155,10 @@ Cari baris 'PermitRootLogin' dan pastikan nilainya 'yes'
 
 ```
 curl -fsSL https://tailscale.com/install.sh | sh   #unduh dan instalasi Tailscale
-tailscale up                                       #aktifkan Tailscale dan login dengan akun Anda
+tailscale up                                       #aktifkan Tailscale dan login dengan akun 
 ```
 
-Setelah menjalankan perintah di atas, ikuti instruksi pada terminal untuk login ke akun Tailscale Anda melalui browser. Setelah berhasil login, server Anda akan terhubung ke jaringan privat Tailscale dan dapat diakses dari perangkat lain yang juga terhubung ke jaringan yang sama.
+Setelah menjalankan perintah di atas, ikuti instruksi pada terminal untuk login ke akun Tailscale melalui browser. Setelah berhasil login, server akan terhubung ke jaringan privat Tailscale dan dapat diakses dari perangkat lain yang juga terhubung ke jaringan yang sama.
 
 ## Instalasi CloudStack
 
@@ -256,7 +256,7 @@ service nfs-kernel-server restart
 - `echo "NEED_STATD=yes"` menambahkan baris agar layanan statd aktif.
 - `service nfs-kernel-server restart` untuk me-restart layanan NFS.
 
-> Pastikan semua konfigurasi sudah sesuai dengan IP server Anda (`192.168.1.10`) dan storage sudah tersedia sebelum melanjutkan ke konfigurasi CloudStack berikutnya.
+> Pastikan semua konfigurasi sudah sesuai dengan IP server (`192.168.1.10`) dan storage sudah tersedia sebelum melanjutkan ke konfigurasi CloudStack berikutnya.
 
 ### Konfigurasi CloudStack
 -
@@ -379,8 +379,193 @@ systemctl mask libvirtd.socket libvirtd-ro.socket libvirtd-admin.socket libvirtd
 # Me-restart layanan libvirtd agar semua perubahan konfigurasi diterapkan
 systemctl restart libvirtd
 ```
+
 ## Setup on GUI : Creating Pod, Zone, Cluster, Host, ISO, and Instance. (VIERIN)
 
-## Network Architecture Setup: Setup VM, Expose subnet route on Tailscale, Creating Firewall rules, and Final Topology. (HAFIZ)
+## Network Architecture Setup: Setup VM, Expose subnet route on Tailscale, Creating SNAT rules, and Final Topology. (HAFIZ)
+
+## Setup VM
+```bash
+vm1@vm1:~$ ip a
+1: lo: <LOOPBACK,UP,LOWER_UP> ...
+    inet 127.0.0.1/8 scope host lo
+2: ens3: <BROADCAST,MULTICAST,UP,LOWER_UP> ...
+    inet 192.168.1.114/24 metric 100 brd 192.168.1.255 scope global ens3
+```
+
+## Expose subnet route
+
+Jalankan perintah berikut pada laptop host di jaringan `192.168.1.0/24` dan yang telah login Tailscale:
+
+```bash
+sudo tailscale up --advertise-routes=192.168.1.0/24
+````
+
+### Approve route dari admin console
+
+Masuk ke [Tailscale Admin Console](https://login.tailscale.com/admin) lalu:
+
+* Buka tab **Machines**
+* Cari perangkat host untuk advertise route
+* Klik **Review route** lalu **Enable** untuk subnet `192.168.1.0/24`
+
+
+
+### Cek konektivitas
+
+Setelah route disetujui, perangkat lain di jaringan Tailscale akan dapat mengakses alamat IP host dalam subnet `192.168.1.0/24`.
+
+Contoh:
+
+```bash
+ping 192.168.1.114
+```
+
+* aktifkan IP forwarding untuk akses dua arah:
+
+
+  ```bash
+  sudo sysctl -w net.ipv4.ip_forward=1
+  ```
+
+## Creating SNAT rules
+
+### Situasi
+
+- Laptop Host:
+  - IP Lokal: `192.168.1.10`
+  - IP Tailscale: `100.66.37.47`
+- VM berjalan di dalam laptop host:
+  - IP VM: `192.168.1.114`
+- Perangkat lain di jaringan Tailscale:
+  - IP Tailscale: `100.124.10.100` (laptop lain)
+
+Perangkat dengan IP Tailscale `100.124.10.100` ingin melakukan ping ke `192.168.1.114` (VM).
+
+---
+
+## Problem
+
+- Ping dari `100.124.10.100` berhasil **masuk ke VM**, namun gagal mendapatkan **reply**.
+- Setelah ditelusuri, reply dari VM tidak kembali ke `100.124.10.100`, tapi malah dilempar ke **default gateway rumah** (`192.168.1.1`).
+- Ini terjadi karena VM tidak mengenali IP Tailscale `100.124.10.100` sebagai bagian dari jaringan yang valid.
+
+---
+
+## Penyebab
+
+- Saat ping masuk, source IP-nya adalah `100.124.10.100`.
+- VM tidak tahu harus balas ke mana, karena tidak ada routing ke IP tersebut.
+- Akibatnya, VM mengirim balasan ke default gateway (`192.168.1.1`) dan bukannya kembali melalui laptop host.
+
+---
+
+## Solusi
+
+Agar VM bisa mengenali sumber ping dan membalas melalui jalur yang benar, kita perlu mengubah source IP saat paket diteruskan dari Tailscale ke VM. Caranya adalah dengan menggunakan iptables SNAT (dalam bentuk MASQUERADE).
+
+Tambahkan rule berikut di laptop host (bukan di VM):
+
+```bash
+sudo iptables -t nat -A POSTROUTING -o cloudbr0 -j MASQUERADE
+````
+
+Penjelasan:
+
+* `-t nat`: mengatur tabel NAT
+* `-A POSTROUTING`: menambahkan rule di tahap setelah routing diproses
+* `-o cloudbr0`: interface virtual bridge (jaringan antara host dan VM)
+* `-j MASQUERADE`: mengganti source IP menjadi IP dari interface tersebut (dalam hal ini `192.168.1.10`)
+
+---
+
+## Hasil
+
+Setelah rule diterapkan:
+
+* Saat laptop lain (100.124.10.100) ping ke `192.168.1.114`, paket diteruskan dari Tailscale ke VM melalui laptop host.
+* Source IP diubah dari `100.124.10.100` menjadi `192.168.1.10`.
+* VM mengenali dan merespon ke IP `192.168.1.10`.
+* Laptop host kemudian meneruskan kembali balasan ke `100.124.10.100` melalui Tailscale.
+
+---
+
+### Final Topology
+![image](https://hackmd.io/_uploads/BkNaPVoWge.png)
 
 ## Service Setup: SSH and Http via apache (HAFIZ)
+
+
+### Instalasi OpenSSH Server
+
+```bash
+sudo apt install openssh-server -y
+```
+
+### Cek Status SSH
+
+```bash
+sudo systemctl status ssh
+```
+
+### Jalankan SSH
+
+```bash
+sudo systemctl enable ssh
+sudo systemctl start ssh
+```
+
+### Cek IP Address untuk Akses
+
+```bash
+ip a
+```
+
+Gunakan IP tersebut untuk mengakses SSH dari perangkat lain:
+
+```bash
+ssh vm1@192.168.1.114
+```
+
+---
+
+## Setup HTTP Service (Apache)
+
+### Instalasi Apache2
+
+```bash
+sudo apt install apache2 -y
+```
+
+### Cek Status Apache
+
+```bash
+sudo systemctl status apache2
+```
+
+### Jalankan Apache (jika belum aktif)
+
+```bash
+sudo systemctl enable apache2
+sudo systemctl start apache2
+```
+
+### Tes di Browser
+
+Buka browser dan akses:
+
+```
+http://localhost
+```
+
+atau dari perangkat lain:
+
+```
+http://192.168.1.114
+```
+![image](https://hackmd.io/_uploads/Bk-PiVoWlg.png)
+
+
+---
+
+

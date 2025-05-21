@@ -382,3 +382,5 @@ systemctl restart libvirtd
 ## Setup on GUI : Creating Pod, Zone, Cluster, Host, ISO, and Instance. (VIERIN)
 
 ## Network Architecture Setup: Setup VM, Expose subnet route on Tailscale, Creating Firewall rules, and Final Topology. (HAFIZ)
+
+## Service Setup: SSH and Http via apache (HAFIZ)

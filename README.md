@@ -4,15 +4,15 @@ Kelompok 8:
 - Monica Vierin Pasman (2206029405)
 - Muhammad Fahish Haritsah (2206059616)
 - Valentino Farish Adrian (2206825896)
-- Stefanus Simon Rilando 92206830422)
+- Stefanus Simon Rilando (2206830422)
 
 ## Dasar Teori
 ### CloudStack
 Apache CloudStack merupakan perangkat lunak open-source yang dirancang untuk membangun, menjalankan, dan mengelola jaringan besar sebagai platform komputasi awan IaaS (Infrastructure as a Service). CloudStack digunakan oleh banyak penyedia layanan dan perusahaan untuk menawarkan layanan cloud publik, layanan cloud on-premises/private, atau sebagai solusi dari hybrid cloud. Pengguna dapat mengelola cloud-nya sendiri melalui antarmuka web (GUI), command line (CLI), dan full-featured RESTful API. API yang disediakan telah kompatibel dengan AWS EC2 dan S3 bagi organisasi yang ingin men-deploy hybrid cloud. Platform ini menyediakan lapisan orkestrasi yang otomatis membuat dan mengatur komponen-komponen infrastruktur virtual, serta mengubah infrastruktur virtual tersebut menjadi platform cloud IaaS yang siap digunakan. Fitur-fitur yang disediakan CloudStack terdiri dari:
-- pengelolaan otomatis dalam pembuatan dan penghapusan VM;
-- manajemen jaringan virtual (router, firewall, load balancer, dan IP publik);
-- dukungan multi-tenant (banyak pengguna dan organisasi); serta
-- perhitungan penggunaan sumber daya (CPU, RAM, dan penyimpanan) per pengguna.
+- Pengelolaan otomatis dalam pembuatan dan penghapusan VM;
+- Manajemen jaringan virtual (router, firewall, load balancer, dan IP publik);
+- Dukungan multi-tenant (banyak pengguna dan organisasi); serta
+- Perhitungan penggunaan sumber daya (CPU, RAM, dan penyimpanan) per pengguna.
 
 
 ### TailScale
@@ -25,7 +25,10 @@ KVM (Kernel-based Virtual Machine) adalah teknologi virtualisasi open-source yan
 Libvirt merupakan sebuah toolkit dan API open-source yang digunakan untuk mengelola teknologi virtualisasi. Libvirt menyediakan antarmuka terpadu untuk mengontrol berbagai jenis hypervisor, seperti KVM (Kernel-based Virtual Machine), QEMU, Xen, VMware, dan lainnya. Libvirt berperan sebagai lapisan abstraksi yang memungkinkan layanan cloud seperti OpenStack untuk mengatur lifecycle VM secara otomatis dan terintegrasi.
 
 ## Server NFS 
-Network File System (NFS) adalah sebuah protokol jaringan yang memungkinkan sebuah sistem komputer untuk mengakses file dan direktori yang terletak pada komputer lain seolah-olah file tersebut berada pada sistem lokal. NFS digunakan untuk menyediakan layanan penyimpanan terpusat yang dapat diakses oleh banyak client atau mesin virtual (VM) secara bersamaan.
+Network File System (NFS) adalah sebuah protokol jaringan yang memungkinkan sebuah sistem komputer untuk mengakses file dan direktori yang terletak pada komputer lain seolah-olah file tersebut berada pada sistem lokal. NFS digunakan untuk menyediakan layanan penyimpanan terpusat yang dapat diakses oleh banyak client atau mesin virtual (VM) secara bersamaan. Fungsi Server NFS:
+- Penyimpanan terpusat pada satu lokasi (server), namun dapat digunakan oleh banyak sistem client.
+- Kolaborasi Multi-Client sehingga beberapa VM atau container dapat mengakses dan memodifikasi file yang sama secara bersamaan.
+- Memungkinkan distribusi penyimpanan yang fleksibel dan dapat diakses oleh berbagai node dalam jaringan
 
 ## Computing Environment
 ### System Requirement

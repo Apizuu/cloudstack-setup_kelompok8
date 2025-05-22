@@ -4,6 +4,7 @@ Kelompok 8:
 - Monica Vierin Pasman (2206029405)
 - Muhammad Fahish Haritsah (2206059616)
 - Valentino Farish Adrian (2206825896)
+- Stefanus Simon Rilando 92206830422)
 
 ## Dasar Teori
 ### CloudStack
@@ -19,6 +20,12 @@ Tailscale adalah solusi VPN berbasis WireGuard yang memudahkan pembuatan jaringa
 
 ### KVM
 KVM (Kernel-based Virtual Machine) adalah teknologi virtualisasi open-source yang terintegrasi langsung dengan kernel Linux. KVM memungkinkan satu server fisik menjalankan banyak mesin virtual (VM) dengan performa mendekati bare-metal. Dalam penerapan cloud IaaS menggunakan Apache CloudStack, KVM berperan sebagai hypervisor utama untuk menjalankan dan mengelola VM yang disediakan kepada pengguna, sehingga memungkinkan isolasi, alokasi sumber daya dinamis, dan skalabilitas infrastruktur cloud.
+
+## Libvirt
+Libvirt merupakan sebuah toolkit dan API open-source yang digunakan untuk mengelola teknologi virtualisasi. Libvirt menyediakan antarmuka terpadu untuk mengontrol berbagai jenis hypervisor, seperti KVM (Kernel-based Virtual Machine), QEMU, Xen, VMware, dan lainnya. Libvirt berperan sebagai lapisan abstraksi yang memungkinkan layanan cloud seperti OpenStack untuk mengatur lifecycle VM secara otomatis dan terintegrasi.
+
+## Server NFS 
+Network File System (NFS) adalah sebuah protokol jaringan yang memungkinkan sebuah sistem komputer untuk mengakses file dan direktori yang terletak pada komputer lain seolah-olah file tersebut berada pada sistem lokal. NFS digunakan untuk menyediakan layanan penyimpanan terpusat yang dapat diakses oleh banyak client atau mesin virtual (VM) secara bersamaan.
 
 ## Computing Environment
 ### System Requirement

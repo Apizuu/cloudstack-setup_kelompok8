@@ -11,7 +11,7 @@ Kelompok 8:
 ---
 
 ## Video Tutorial
-[![Watch the video](https://img.youtube.com/vi/ib8KVxeeaJU/0.jpg)](https://youtu.be/ib8KVxeeaJU)
+[![Watch the video](https://img.youtube.com/vi/ib8KVxeeaJU/maxresdefault.jpg)](https://youtu.be/ib8KVxeeaJU)
 
 ---
 
@@ -29,10 +29,10 @@ Tailscale adalah solusi VPN berbasis WireGuard yang memudahkan pembuatan jaringa
 ### KVM
 KVM (Kernel-based Virtual Machine) adalah teknologi virtualisasi open-source yang terintegrasi langsung dengan kernel Linux. KVM memungkinkan satu server fisik menjalankan banyak mesin virtual (VM) dengan performa mendekati bare-metal. Dalam penerapan cloud IaaS menggunakan Apache CloudStack, KVM berperan sebagai hypervisor utama untuk menjalankan dan mengelola VM yang disediakan kepada pengguna, sehingga memungkinkan isolasi, alokasi sumber daya dinamis, dan skalabilitas infrastruktur cloud.
 
-## Libvirt
+### Libvirt
 Libvirt merupakan sebuah toolkit dan API open-source yang digunakan untuk mengelola teknologi virtualisasi. Libvirt menyediakan antarmuka terpadu untuk mengontrol berbagai jenis hypervisor, seperti KVM (Kernel-based Virtual Machine), QEMU, Xen, VMware, dan lainnya. Libvirt berperan sebagai lapisan abstraksi yang memungkinkan layanan cloud seperti OpenStack untuk mengatur lifecycle VM secara otomatis dan terintegrasi.
 
-## Server NFS 
+### Server NFS 
 Network File System (NFS) adalah sebuah protokol jaringan yang memungkinkan sebuah sistem komputer untuk mengakses file dan direktori yang terletak pada komputer lain seolah-olah file tersebut berada pada sistem lokal. NFS digunakan untuk menyediakan layanan penyimpanan terpusat yang dapat diakses oleh banyak client atau mesin virtual (VM) secara bersamaan. Fungsi Server NFS:
 - Penyimpanan terpusat pada satu lokasi (server), namun dapat digunakan oleh banyak sistem client.
 - Kolaborasi Multi-Client sehingga beberapa VM atau container dapat mengakses dan memodifikasi file yang sama secara bersamaan.

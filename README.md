@@ -6,6 +6,11 @@ Kelompok 8:
 - Valentino Farish Adrian (2206825896)
 - Stefanus Simon Rilando (2206830422)
 
+## Link Video
+```
+YouTube: https://youtu.be/ib8KVxeeaJU?si=FbF6ZzbK7qLyqMop
+```
+
 ## Dasar Teori
 ### CloudStack
 Apache CloudStack merupakan perangkat lunak open-source yang dirancang untuk membangun, menjalankan, dan mengelola jaringan besar sebagai platform komputasi awan IaaS (Infrastructure as a Service). CloudStack digunakan oleh banyak penyedia layanan dan perusahaan untuk menawarkan layanan cloud publik, layanan cloud on-premises/private, atau sebagai solusi dari hybrid cloud. Pengguna dapat mengelola cloud-nya sendiri melalui antarmuka web (GUI), command line (CLI), dan full-featured RESTful API. API yang disediakan telah kompatibel dengan AWS EC2 dan S3 bagi organisasi yang ingin men-deploy hybrid cloud. Platform ini menyediakan lapisan orkestrasi yang otomatis membuat dan mengatur komponen-komponen infrastruktur virtual, serta mengubah infrastruktur virtual tersebut menjadi platform cloud IaaS yang siap digunakan. Fitur-fitur yang disediakan CloudStack terdiri dari:
@@ -540,7 +545,4 @@ Buka browser dan akses `http://localhost`. Jika dibuka dari perangkat lain, dapa
 
 ---
 
-## Link Video
-```
-YouTube: https://youtu.be/ib8KVxeeaJU?si=FbF6ZzbK7qLyqMop
-```
+

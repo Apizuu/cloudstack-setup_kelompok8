@@ -1,4 +1,6 @@
 # Instalasi dan Konfigurasi Apache CloudStack
+[![image](https://github.com/user-attachments/assets/ec5bc53e-a4b2-4e91-9b6b-c9c6de4f57e4)](https://ee.ui.ac.id/)
+
 Kelompok 8:
 - Hafizyah Rayhan Zulikhram (2206029185)
 - Monica Vierin Pasman (2206029405)
@@ -6,10 +8,12 @@ Kelompok 8:
 - Valentino Farish Adrian (2206825896)
 - Stefanus Simon Rilando (2206830422)
 
-## Link Video
-```
-YouTube: https://youtu.be/ib8KVxeeaJU?si=FbF6ZzbK7qLyqMop
-```
+---
+
+## Video Tutorial
+[![Watch the video](https://img.youtube.com/vi/ib8KVxeeaJU/0.jpg)](https://youtu.be/ib8KVxeeaJU)
+
+---
 
 ## Dasar Teori
 ### CloudStack
@@ -18,7 +22,6 @@ Apache CloudStack merupakan perangkat lunak open-source yang dirancang untuk mem
 - Manajemen jaringan virtual (router, firewall, load balancer, dan IP publik);
 - Dukungan multi-tenant (banyak pengguna dan organisasi); serta
 - Perhitungan penggunaan sumber daya (CPU, RAM, dan penyimpanan) per pengguna.
-
 
 ### TailScale
 Tailscale adalah solusi VPN berbasis WireGuard yang memudahkan pembuatan jaringan privat antar perangkat secara otomatis dan aman, tanpa perlu konfigurasi firewall atau port forwarding yang rumit. Dalam konteks ini, Tailscale dapat digunakan untuk perangkat administrator secara aman melalui jaringan privat, sehingga memudahkan akses remote, monitoring, dan manajemen infrastruktur cloud dari mana saja.
@@ -34,6 +37,8 @@ Network File System (NFS) adalah sebuah protokol jaringan yang memungkinkan sebu
 - Penyimpanan terpusat pada satu lokasi (server), namun dapat digunakan oleh banyak sistem client.
 - Kolaborasi Multi-Client sehingga beberapa VM atau container dapat mengakses dan memodifikasi file yang sama secara bersamaan.
 - Memungkinkan distribusi penyimpanan yang fleksibel dan dapat diakses oleh berbagai node dalam jaringan
+
+---
 
 ## Computing Environment
 ### System Requirement
@@ -52,6 +57,8 @@ Gateway Address: 192.168.1.1
 Host IP Address: 192.168.1.10/24
 Host Tailscale IP Address: 100.66.37.47/32
 ```
+
+---
 
 ## Konfigurasi Jaringan
 ### Definisikan Konfigurasi Jaringan dengan Netplan pada /etc/netplan
@@ -153,12 +160,16 @@ nano /etc/ssh/sshd_config
 ```
 Cari baris `PermitRootLogin` dan pastikan nilainya `yes`
 
+---
+
 ## Instalasi Tailscale
 ```
 curl -fsSL https://tailscale.com/install.sh | sh   # Unduh dan instalasi Tailscale
 tailscale up                                       # Aktifkan Tailscale dan login dengan akun 
 ```
 Setelah menjalankan perintah di atas, ikuti instruksi pada terminal untuk login ke akun Tailscale melalui browser. Setelah berhasil login, server akan terhubung ke jaringan privat Tailscale dan dapat diakses dari perangkat lain yang juga terhubung ke jaringan yang sama.
+
+---
 
 ## Instalasi CloudStack
 ### Import Key Repository dari CloudStack
@@ -344,6 +355,8 @@ http://<IP-ADDRESS>:8080
 ```
 > Ganti nilai `IP-ADDRESS` dengan alamat IP lokal milik host atau alamat IP Tailscale milik host untuk akses dashboard admin CloudStack dari jarak jauh. 
 
+---
+
 ## Setup GUI CloudStack
 ### Buat Zona Baru
 - Klik icon menu pada bagian kiri atas.
@@ -409,6 +422,8 @@ Secara default, CloudStack sudah memberikan pilihan komputasi untuk `Small Insta
 - Sisanya biarkan dalam pilihan default, lalu klik `Launch instance`.
 - Instance VM yang telah berhasil dibuat akan menunjukkan state `Running`. Console VM hanya dapat diakses oleh perangkat yang satu jaringan dengan host dan VM. Jika ingin diakses dari luar dapat mengikuti tutorial di bawah ini. 
 
+---
+
 ## Setup VM
 ### Cek Interface dan Alamat IP
 Cek interface dan alamat IP yang terdaftar di VM menggunakan command `ip a`.
@@ -456,21 +471,15 @@ sudo sysctl -w net.ipv4.ip_forward=1
   - IP Tailscale: `100.124.10.100` (laptop lain)
 > Perangkat dengan IP Tailscale `100.124.10.100` ingin melakukan ping ke `192.168.1.114` (VM).
 
----
-
 #### Masalah
 - Ping dari `100.124.10.100` berhasil **masuk ke VM**, tetapi perangkat luar gagal mendapatkan **reply**.
 - Setelah ditelusuri, reply dari VM tidak kembali ke `100.124.10.100`, tetapi malah dilempar ke **default gateway router** yang terhubung dengan host (`192.168.1.1`).
 - Hal ini terjadi karena VM tidak mengenali IP Tailscale `100.124.10.100` sebagai bagian dari jaringan yang valid.
 
----
-
 #### Penyebab
 - Saat ping masuk, source IP-nya adalah `100.124.10.100`.
 - VM tidak tahu harus mengirim balasan ke mana, karena tidak ada routing ke IP tersebut.
 - Akibatnya, VM mengirim balasan ke default gateway (`192.168.1.1`) dan bukannya kembali melalui laptop host.
-
----
 
 #### Solusi
 Agar VM bisa mengenali sumber ping dan membalas melalui jalur yang benar, source IP perlu diubah saat paket diteruskan dari Tailscale ke VM. Caranya dengan menggunakan iptables SNAT (dalam bentuk MASQUERADE).
@@ -486,8 +495,6 @@ Penjelasan:
 * `-o cloudbr0`: interface virtual bridge (jaringan antara host dan VM)
 * `-j MASQUERADE`: mengganti source IP menjadi IP dari interface tersebut (dalam hal ini `192.168.1.10`)
 
----
-
 #### Hasil
 Setelah rule diterapkan:
 * Saat laptop lain (100.124.10.100) ping ke `192.168.1.114`, paket diteruskan dari Tailscale ke VM melalui laptop host.
@@ -499,6 +506,8 @@ Setelah rule diterapkan:
 
 ## Topologi Final
 ![Gambar Topologi Akhir](final_topologi.png)
+
+---
 
 ## Setup Layanan (SSH and HTTP via Apache) 
 ### Setup SSH 
@@ -524,8 +533,6 @@ Gunakan IP tersebut untuk akses SSH dari perangkat luar.
 ssh vm1@192.168.1.114
 ```
 
----
-
 ### Setup HTTP Service (Apache)
 #### Install Apache2
 ```
@@ -544,5 +551,3 @@ Buka browser dan akses `http://localhost`. Jika dibuka dari perangkat lain, dapa
 ![Akses http](akses_HTTP.png)
 
 ---
-
-

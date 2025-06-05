@@ -539,3 +539,8 @@ Buka browser dan akses `http://localhost`. Jika dibuka dari perangkat lain, dapa
 ![Akses http](akses_HTTP.png)
 
 ---
+
+## Link Video
+```
+YouTube: https://youtu.be/ib8KVxeeaJU?si=FbF6ZzbK7qLyqMop
+```

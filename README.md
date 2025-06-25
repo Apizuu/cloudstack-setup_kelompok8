@@ -1,19 +1,4 @@
 # Instalasi dan Konfigurasi Apache CloudStack
-[![image](https://github.com/user-attachments/assets/ec5bc53e-a4b2-4e91-9b6b-c9c6de4f57e4)](https://ee.ui.ac.id/)
-
-Kelompok 8:
-- Hafizyah Rayhan Zulikhram (2206029185)
-- Monica Vierin Pasman (2206029405)
-- Muhammad Fahish Haritsah (2206059616)
-- Valentino Farish Adrian (2206825896)
-- Stefanus Simon Rilando (2206830422)
-
----
-
-## Video Tutorial
-[![Watch the video](https://img.youtube.com/vi/ib8KVxeeaJU/maxresdefault.jpg)](https://youtu.be/ib8KVxeeaJU)
-
----
 
 ## Dasar Teori
 ### CloudStack
